@@ -1,0 +1,25 @@
+# Build folders
+bin/
+obj/
+
+# Visual Studio files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code settings
+.vscode/
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Others
+*.swp
+
+
+appsettings.json
+appsettings.Development.json
