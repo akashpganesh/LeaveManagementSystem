@@ -1,24 +1,12 @@
 ﻿@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+    ViewData["Title"] = "My Leave Requests";
 }
 
 <div class="container mt-4">
-    <h2 class="text-center mb-4">Leave Requests</h2>
-
-    <div class="mb-3" style="width: 200px;">
-        <label for="monthFilter" class="form-label">Show leave requests from last</label>
-        <select id="monthFilter" class="form-select">
-            <option value="">All</option>
-            <option value="1">1 month</option>
-            <option value="3" selected>3 months</option>
-            <option value="6">6 months</option>
-        </select>
-    </div>
+    <h2 class="text-center mb-4">My Leave Requests</h2>
 
     <div id="alert-placeholder"></div>
-
-    <div id="leaveCounts" class="mb-4"></div>
 
     <div id="leaveList">
         <div class="text-center">
@@ -38,9 +26,7 @@
                 <h5 class="modal-title" id="leaveDetailsModalLabel">Leave Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="leaveDetailsBody">
-                <!-- Leave details will be injected here -->
-            </div>
+            <div class="modal-body" id="leaveDetailsBody"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
@@ -48,7 +34,6 @@
     </div>
 </div>
 
-
 @section Scripts {
-    <script src="~/js/Admin/Index.js" asp-append-version="true"></script>
+    <script src="~/js/Employee/MyLeaveRequests.js" asp-append-version="true"></script>
 }

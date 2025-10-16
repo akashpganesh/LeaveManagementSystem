@@ -10,7 +10,7 @@ function getUserIdFromToken() {
 }
 
 const userId = getUserIdFromToken();
-if (!userId) window.location.href = "/Account/Login";
+if (!userId) window.location.href = "/Home/Index";
 
 const token = localStorage.getItem("token");
 

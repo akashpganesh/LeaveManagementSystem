@@ -6,7 +6,7 @@ const alertPlaceholder = document.getElementById("alert-placeholder");
 async function loadUsers() {
     const token = localStorage.getItem("token");
     if (!token) {
-        window.location.href = "/Account/Login";
+        window.location.href = "/Home/Index";
         return;
     }
 

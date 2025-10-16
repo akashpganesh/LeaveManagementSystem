@@ -8,10 +8,12 @@ namespace LeaveManagement.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly string _connectionString;
+        private readonly ILogger<UserRepository> _logger;
 
-        public UserRepository(IConfiguration config)
+        public UserRepository(IConfiguration config, ILogger<UserRepository> logger)
         {
             _connectionString = config.GetConnectionString("DefaultConnection");
+            _logger = logger;
         }
 
         public async Task RegisterUser(RegisterRequest user)
@@ -32,10 +34,12 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
+                _logger.LogError(ex, "Error registering user: {Email}", user.Email);
+
                 if (ex.Message.Contains("Email already exists", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("Email already exists", ex);
 
-                throw new Exception($"Database error while registering user: {ex.Message}", ex);
+                throw new Exception("Database error while registering user", ex);
             }
         }
 
@@ -59,7 +63,8 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Database error while logging in: {ex.Message}", ex);
+                _logger.LogError(ex, "Error logging in user: {Email}", email);
+                throw new Exception("Database error while logging in", ex);
             }
         }
 
@@ -80,7 +85,8 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Database error while fetching users: {ex.Message}", ex);
+                _logger.LogError(ex, "Error fetching all users for managerId: {ManagerId}", managerId);
+                throw new Exception("Database error while fetching users", ex);
             }
         }
 
@@ -101,7 +107,8 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Database error while fetching user with ID {userId}: {ex.Message}", ex);
+                _logger.LogError(ex, "Error fetching user by Id: {UserId}", userId);
+                throw new Exception($"Database error while fetching user with ID {userId}", ex);
             }
         }
 
@@ -121,10 +128,12 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
+                _logger.LogError(ex, "Error updating user profile for UserId: {UserId}", userId);
+
                 if (ex.Message.Contains("Email already exists", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("Email already exists", ex);
 
-                throw new Exception($"Database error while updating user: {ex.Message}", ex);
+                throw new Exception("Database error while updating user", ex);
             }
         }
 
@@ -143,10 +152,12 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
+                _logger.LogError(ex, "Error changing password for UserId: {UserId}", userId);
+
                 if (ex.Message.Contains("Old password is incorrect", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("Old password is incorrect", ex);
 
-                throw new Exception($"Database error while changing password: {ex.Message}", ex);
+                throw new Exception("Database error while changing password", ex);
             }
         }
 
@@ -163,32 +174,32 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
+                _logger.LogError(ex, "Error deleting user with UserId: {UserId}", userId);
+
                 if (ex.Message.Contains("User not found", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidOperationException("User not found", ex);
 
-                throw new Exception($"Database error while deleting user: {ex.Message}", ex);
+                throw new Exception("Database error while deleting user", ex);
             }
         }
 
         public async Task<bool> AssignManagerAsync(int userId, int managerId)
         {
-            using (IDbConnection db = new SqlConnection(_connectionString))
+            try
             {
+                using IDbConnection db = new SqlConnection(_connectionString);
+
                 var parameters = new DynamicParameters();
                 parameters.Add("@UserId", userId);
                 parameters.Add("@ManagerId", managerId);
 
-                try
-                {
-                    await db.ExecuteAsync("sp_AssignManager", parameters, commandType: CommandType.StoredProcedure);
-                    return true;
-                }
-                catch (SqlException ex)
-                {
-                    // Handle SQL errors (like user not found)
-                    Console.WriteLine($"SQL Error: {ex.Message}");
-                    return false;
-                }
+                await db.ExecuteAsync("sp_AssignManager", parameters, commandType: CommandType.StoredProcedure);
+                return true;
+            }
+            catch (SqlException ex)
+            {
+                _logger.LogError(ex, "Error assigning manager {ManagerId} to user {UserId}", managerId, userId);
+                return false;
             }
         }
 
@@ -208,7 +219,8 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Database error while promoting user: {ex.Message}", ex);
+                _logger.LogError(ex, "Error promoting user {UserId} to manager", userId);
+                throw new Exception("Database error while promoting user", ex);
             }
         }
 
@@ -228,7 +240,8 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
-                throw new Exception($"Database error while fetching managers: {ex.Message}", ex);
+                _logger.LogError(ex, "Error fetching managers for department: {Department}", department);
+                throw new Exception("Database error while fetching managers", ex);
             }
         }
     }

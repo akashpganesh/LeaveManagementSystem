@@ -15,7 +15,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white shadow-sm mb-4">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Employee" asp-action="Index">Leave Management</a>
+                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-controller="Employee" asp-action="Index">Leave Management</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -30,7 +30,14 @@
                             <a class="nav-link" asp-area="" asp-controller="Employee" asp-action="MyProfile">My Profile</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="" asp-action="">Logout</a>
+                            <a class="nav-link" asp-area="" asp-controller="Employee" asp-action="CreateLeaveRequest">Request Leave</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Employee" asp-action="MyLeaveRequests">My Leave Requests</a>
+                        </li>
+                        <li class="nav-item">
+                            <!-- Logout link triggers JS logout function -->
+                            <a class="nav-link fw-semibold" href="javascript:void(0);" onclick="logout()">Logout</a>
                         </li>
                     </ul>
                 </div>
@@ -54,6 +61,18 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        function logout() {
+            if (confirm("Are you sure you want to log out?")) {
+                localStorage.removeItem("token"); // Clear JWT token
+                localStorage.removeItem("userId");
+                localStorage.removeItem("Role");
+                window.location.href = "/"; // Redirect to login page
+            }
+        }
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

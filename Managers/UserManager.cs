@@ -26,14 +26,15 @@ namespace LeaveManagement.Managers
             {
                 await _userRepo.RegisterUser(user);
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("Email already exists"))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Email already exists", StringComparison.OrdinalIgnoreCase))
             {
-                throw; // Allow controller to return 400
+                _logger.LogWarning(ex, "Attempt to register duplicate email: {Email}", user.Email);
+                throw; // Controller will handle 400
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while registering user {Email}", user.Email);
-                throw new Exception($"Error occurred while registering the user: {ex.Message}", ex);
+                throw new Exception("Error occurred while registering the user", ex);
             }
         }
 
@@ -43,7 +44,10 @@ namespace LeaveManagement.Managers
             {
                 var user = await _userRepo.LoginUser(email, password);
                 if (user == null)
+                {
+                    _logger.LogWarning("Failed login attempt for {Email}", email);
                     throw new UnauthorizedAccessException("Invalid email or password");
+                }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -59,7 +63,7 @@ namespace LeaveManagement.Managers
                     issuer: _config["Jwt:Issuer"],
                     audience: _config["Jwt:Audience"],
                     claims: claims,
-                    expires: DateTime.Now.AddMinutes(Convert.ToDouble(_config["Jwt:ExpiresInMinutes"])),
+                    expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["Jwt:ExpiresInMinutes"])),
                     signingCredentials: creds
                 );
 
@@ -70,15 +74,14 @@ namespace LeaveManagement.Managers
                     Role = user.Role
                 };
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                _logger.LogWarning(ex, "Failed login attempt for {Email}", email);
-                throw;
+                throw; // Controller returns 401
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error during login for {Email}", email);
-                throw new Exception($"Error occurred while logging in: {ex.Message}", ex);
+                throw new Exception("Error occurred while logging in", ex);
             }
         }
 
@@ -87,7 +90,6 @@ namespace LeaveManagement.Managers
             try
             {
                 var users = await _userRepo.GetAllUsers(managerId);
-
                 return users.Select(u => new UserDto
                 {
                     UserId = u.UserId,
@@ -103,18 +105,17 @@ namespace LeaveManagement.Managers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error while fetching users");
-                throw new Exception($"Error occurred while fetching users: {ex.Message}", ex);
+                _logger.LogError(ex, "Error fetching all users");
+                throw new Exception("Error occurred while fetching users", ex);
             }
         }
 
-        public async Task<UserDto> GetUserById(int userId)
+        public async Task<UserDto?> GetUserById(int userId)
         {
             try
             {
                 var user = await _userRepo.GetUserById(userId);
-                if (user == null)
-                    return null;
+                if (user == null) return null;
 
                 return new UserDto
                 {
@@ -132,7 +133,7 @@ namespace LeaveManagement.Managers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching user with ID {UserId}", userId);
-                throw new Exception($"Error occurred while fetching the user: {ex.Message}", ex);
+                throw new Exception($"Error occurred while fetching the user", ex);
             }
         }
 
@@ -145,19 +146,20 @@ namespace LeaveManagement.Managers
 
                 await _userRepo.UpdateUserProfile(userId, request.FullName, request.Email, request.Phone);
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("Email already exists"))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Email already exists", StringComparison.OrdinalIgnoreCase))
             {
-                throw; // Allow controller to handle duplicate email case
+                _logger.LogWarning(ex, "Duplicate email update attempt for user {UserId}", userId);
+                throw;
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Validation error while updating user profile {UserId}", userId);
+                _logger.LogWarning(ex, "Validation error updating profile for user {UserId}", userId);
                 throw;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error updating user profile {UserId}", userId);
-                throw new Exception($"Error occurred while updating the user profile: {ex.Message}", ex);
+                throw new Exception("Error occurred while updating the user profile", ex);
             }
         }
 
@@ -170,19 +172,20 @@ namespace LeaveManagement.Managers
 
                 await _userRepo.ChangePassword(userId, request.OldPassword, request.NewPassword);
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("Old password is incorrect"))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("Old password is incorrect", StringComparison.OrdinalIgnoreCase))
             {
-                throw; // Let controller send proper response
+                _logger.LogWarning(ex, "Incorrect old password for user {UserId}", userId);
+                throw;
             }
             catch (ArgumentException ex)
             {
-                _logger.LogWarning(ex, "Validation error while changing password for {UserId}", userId);
+                _logger.LogWarning(ex, "Validation error changing password for user {UserId}", userId);
                 throw;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error changing password for user {UserId}", userId);
-                throw new Exception($"Error occurred while changing the password: {ex.Message}", ex);
+                throw new Exception("Error occurred while changing the password", ex);
             }
         }
 
@@ -192,21 +195,20 @@ namespace LeaveManagement.Managers
             {
                 await _userRepo.DeleteUser(userId);
             }
-            catch (InvalidOperationException ex) when (ex.Message.Contains("User not found"))
+            catch (InvalidOperationException ex) when (ex.Message.Contains("User not found", StringComparison.OrdinalIgnoreCase))
             {
-                throw; // Let controller return 404
+                _logger.LogWarning(ex, "Attempt to delete non-existent user {UserId}", userId);
+                throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting user with ID {UserId}", userId);
-                throw new Exception($"Error occurred while deleting the user: {ex.Message}", ex);
+                _logger.LogError(ex, "Error deleting user {UserId}", userId);
+                throw new Exception("Error occurred while deleting the user", ex);
             }
         }
 
-        public async Task<bool> AssignManagerAsync(int userId, int managerId)
-        {
-            return await _userRepo.AssignManagerAsync(userId, managerId);
-        }
+        public Task<bool> AssignManagerAsync(int userId, int managerId)
+            => _userRepo.AssignManagerAsync(userId, managerId);
 
         public async Task<bool> PromoteToManagerAsync(int userId)
         {
@@ -216,7 +218,7 @@ namespace LeaveManagement.Managers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error promoting user with ID {userId} to Manager");
+                _logger.LogError(ex, "Error promoting user {UserId} to manager", userId);
                 throw;
             }
         }
@@ -226,7 +228,6 @@ namespace LeaveManagement.Managers
             try
             {
                 var users = await _userRepo.GetManagersByDepartmentAsync(department);
-
                 return users.Select(u => new UserDto
                 {
                     UserId = u.UserId,
@@ -238,8 +239,8 @@ namespace LeaveManagement.Managers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error while fetching managers for department: {department}");
-                throw new Exception($"Error fetching managers for department {department}: {ex.Message}", ex);
+                _logger.LogError(ex, "Error fetching managers for department {Department}", department);
+                throw new Exception($"Error fetching managers for department {department}", ex);
             }
         }
     }
