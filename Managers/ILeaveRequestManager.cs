@@ -10,5 +10,6 @@ namespace LeaveManagement.Managers
         Task<LeaveRequestDto> GetLeaveRequestByIdAsync(int leaveId);
         Task<bool> UpdateLeaveStatusAsync(int leaveId, string status);
         Task<DashboardDto> GetDashboardAsync(int employeeId);
+        Task<bool> CancelLeaveRequestAsync(int leaveId, int employeeId);
     }
 }

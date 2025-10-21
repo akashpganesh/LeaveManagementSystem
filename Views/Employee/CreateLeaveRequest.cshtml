@@ -9,27 +9,25 @@
 
         <div id="alert-placeholder"></div>
 
-        <form id="leaveRequestForm">
+        <form id="leaveRequestForm" novalidate>
             <div class="mb-3">
                 <label for="startDate" class="form-label">Start Date</label>
                 <input type="date" class="form-control" id="startDate" required>
+                <div class="invalid-feedback">Start date is required.</div>
             </div>
 
             <div class="mb-3">
                 <label for="endDate" class="form-label">End Date</label>
                 <input type="date" class="form-control" id="endDate" required>
+                <div class="invalid-feedback">End date is required.</div>
             </div>
 
             <div class="mb-3">
                 <label for="leaveType" class="form-label">Leave Type</label>
                 <select class="form-select" id="leaveType" required>
-                    <option value="">Select leave type</option>
-                    <option value="Sick">Sick</option>
-                    <option value="Casual">Casual</option>
-                    <option value="Earned">Earned</option>
-                    <option value="Maternity">Maternity</option>
-                    <option value="Other">Other</option>
+                    <option value="">Loading leave types...</option>
                 </select>
+                <div class="invalid-feedback">Please select a leave type.</div>
             </div>
 
             <div class="mb-3">

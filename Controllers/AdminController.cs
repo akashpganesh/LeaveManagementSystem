@@ -13,5 +13,14 @@ namespace LeaveManagement.Controllers
         {
             return View();
         }
+        public IActionResult LeaveRequests()
+        {
+            return View();
+        }
+
+        public IActionResult LeaveType()
+        {
+            return View();
+        }
     }
 }

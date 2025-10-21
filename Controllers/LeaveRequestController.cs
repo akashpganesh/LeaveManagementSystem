@@ -336,5 +336,44 @@ namespace LeaveManagement.Controllers
                 }
             }
         }
+
+        [HttpPut("Cancel/{leaveId}")]
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> CancelLeaveRequest(int leaveId)
+        {
+            var correlationId = HttpContext.Items["CorrelationId"]?.ToString() ?? Guid.NewGuid().ToString();
+            using (Serilog.Context.LogContext.PushProperty("CorrelationId", correlationId))
+            {
+                try
+                {
+                    var employeeId = int.Parse(User.FindFirst("UserId")?.Value);
+                    var success = await _leaveManager.CancelLeaveRequestAsync(leaveId, employeeId);
+
+                    if (!success)
+                    {
+                        return BadRequest(new
+                        {
+                            Message = "Leave cannot be cancelled. It may not exist or is already processed.",
+                            CorrelationId = correlationId
+                        });
+                    }
+
+                    return Ok(new
+                    {
+                        Message = "Leave request cancelled successfully.",
+                        CorrelationId = correlationId
+                    });
+                }
+                catch (Exception ex)
+                {
+                    return StatusCode(500, new
+                    {
+                        Message = "An error occurred while cancelling the leave request.",
+                        Details = ex.Message,
+                        CorrelationId = correlationId
+                    });
+                }
+            }
+        }
     }
 }

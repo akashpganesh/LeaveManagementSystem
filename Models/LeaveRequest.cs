@@ -6,6 +6,7 @@
         public int EmployeeId { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public int LeaveTypeId { get; set; }
         public string LeaveType { get; set; }
         public string Status { get; set; }
         public string Remarks { get; set; }
@@ -16,7 +17,7 @@
     {
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public string LeaveType { get; set; }
+        public int LeaveTypeId { get; set; }
         public string Remarks { get; set; }
     }
 
@@ -30,6 +31,7 @@
         public string Department { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public int LeaveTypeId { get; set; }
         public string LeaveType { get; set; }
         public string Status { get; set; }
         public string? Remarks { get; set; }
@@ -46,6 +48,7 @@
         public int ApprovedCount { get; set; }
         public int PendingCount { get; set; }
         public int RejectedCount { get; set; }
+        public int CancelledCount { get; set; }
     }
 
     public class DashboardDto
@@ -57,5 +60,6 @@
         public int TotalApproved { get; set; }
         public int TotalPending { get; set; }
         public int TotalRejected { get; set; }
+        public int TotalCancelled { get; set; }
     }
 }

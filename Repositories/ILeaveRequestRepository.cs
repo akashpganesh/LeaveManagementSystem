@@ -11,5 +11,7 @@ namespace LeaveManagement.Repositories
         Task<LeaveRequestDto> GetLeaveRequestByIdAsync(int leaveId);
         Task<int> UpdateLeaveStatusAsync(int leaveId, string status);
         Task<LeaveStatusCountDto> GetLeaveStatsByEmployeeIdAsync(int employeeId);
+        Task<bool> CancelLeaveRequestAsync(int leaveId, int employeeId);
+
     }
 }

@@ -28,6 +28,7 @@ async function loadDashboard() {
             document.getElementById("approved-count").textContent = data.totalApproved;
             document.getElementById("pending-count").textContent = data.totalPending;
             document.getElementById("rejected-count").textContent = data.totalRejected;
+            document.getElementById("cancelled-count").textContent = data.totalCancelled;
         } else {
             alert(result.message || "Failed to load dashboard data.");
         }

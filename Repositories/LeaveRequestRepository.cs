@@ -26,7 +26,7 @@ namespace LeaveManagement.Repositories
                 parameters.Add("@EmployeeId", leave.EmployeeId);
                 parameters.Add("@StartDate", leave.StartDate);
                 parameters.Add("@EndDate", leave.EndDate);
-                parameters.Add("@LeaveType", leave.LeaveType);
+                parameters.Add("@LeaveTypeId", leave.LeaveTypeId);
                 parameters.Add("@Remarks", leave.Remarks);
 
                 return await db.ExecuteScalarAsync<int>(
@@ -37,6 +37,8 @@ namespace LeaveManagement.Repositories
             }
             catch (SqlException ex)
             {
+                if (ex.Message.Contains("Max leaves for this type exceeded."))
+                    throw new Exception($"Max leaves for this type exceeded.", ex);
                 _logger.LogError(ex, "Database error while creating leave request for EmployeeId: {EmployeeId}", leave.EmployeeId);
                 throw new Exception($"Database error while creating leave request: {ex.Message}", ex);
             }
@@ -188,6 +190,34 @@ namespace LeaveManagement.Repositories
             {
                 _logger.LogError(ex, "Database error while fetching leave stats for EmployeeId: {EmployeeId}", employeeId);
                 throw new Exception($"Database error while fetching leave stats: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> CancelLeaveRequestAsync(int leaveId, int employeeId)
+        {
+            using (var connection = new SqlConnection(_connectionString))
+            {
+                var parameters = new DynamicParameters();
+                parameters.Add("@LeaveId", leaveId);
+                parameters.Add("@EmployeeId", employeeId);
+
+                try
+                {
+                    await connection.ExecuteAsync(
+                        "sp_CancelLeaveRequest",
+                        parameters,
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    return true;
+                }
+                catch (SqlException ex)
+                {
+                    if (ex.Message.Contains("cannot be cancelled"))
+                        return false;
+
+                    throw;
+                }
             }
         }
     }

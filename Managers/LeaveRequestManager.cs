@@ -23,7 +23,7 @@ namespace LeaveManagement.Managers
                 if (dto.StartDate > dto.EndDate)
                     throw new ArgumentException("StartDate cannot be after EndDate.");
 
-                if (string.IsNullOrWhiteSpace(dto.LeaveType))
+                if (dto.LeaveTypeId <= 0)
                     throw new ArgumentException("LeaveType must be provided.");
 
                 var leave = new LeaveRequest
@@ -31,7 +31,7 @@ namespace LeaveManagement.Managers
                     EmployeeId = employeeId,
                     StartDate = dto.StartDate,
                     EndDate = dto.EndDate,
-                    LeaveType = dto.LeaveType,
+                    LeaveTypeId = dto.LeaveTypeId,
                     Remarks = dto.Remarks
                 };
 
@@ -45,7 +45,7 @@ namespace LeaveManagement.Managers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while requesting leave for EmployeeId {EmployeeId}", employeeId);
-                throw new Exception("An error occurred while requesting leave.", ex);
+                throw;
             }
         }
 
@@ -147,7 +147,8 @@ namespace LeaveManagement.Managers
                     ManagerName = employee.ManagerName,
                     TotalApproved = stats?.ApprovedCount ?? 0,
                     TotalPending = stats?.PendingCount ?? 0,
-                    TotalRejected = stats?.RejectedCount ?? 0
+                    TotalRejected = stats?.RejectedCount ?? 0,
+                    TotalCancelled = stats?.CancelledCount ?? 0
                 };
             }
             catch (Exception ex)
@@ -156,5 +157,18 @@ namespace LeaveManagement.Managers
                 throw new Exception("An error occurred while fetching the dashboard.", ex);
             }
         }
+        public async Task<bool> CancelLeaveRequestAsync(int leaveId, int employeeId)
+        {
+            try
+            {
+                return await _repo.CancelLeaveRequestAsync(leaveId, employeeId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error cancelling leave request {LeaveId} for Employee {EmployeeId}", leaveId, employeeId);
+                throw;
+            }
+        }
+
     }
 }

@@ -3,52 +3,94 @@
     ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="container mt-4">
-    <h2 class="text-center mb-4">Leave Requests</h2>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Admin Dashboard</h2>
 
-    <div class="mb-3" style="width: 200px;">
-        <label for="monthFilter" class="form-label">Show leave requests from last</label>
-        <select id="monthFilter" class="form-select">
-            <option value="">All</option>
-            <option value="1">1 month</option>
-            <option value="3" selected>3 months</option>
-            <option value="6">6 months</option>
+    <!-- Month Filter -->
+    <div class="text-center mb-4">
+        <label for="monthFilter" class="form-label me-2 fw-bold">Show data from last:</label>
+        <select id="monthFilter" class="form-select d-inline-block" style="width: auto;">
+            <option value="all" selected>All</option>
+            <option value="1">1 Month</option>
+            <option value="3">3 Months</option>
+            <option value="6">6 Months</option>
         </select>
     </div>
 
-    <div id="alert-placeholder"></div>
-
-    <div id="leaveCounts" class="mb-4"></div>
-
-    <div id="leaveList">
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+    <!-- Summary Cards -->
+    <div class="row text-center mb-4 justify-content-center">
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Approved</h6>
+                    <h3 id="approvedCount">0</h3>
+                </div>
             </div>
-            <p>Loading leave requests...</p>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Pending</h6>
+                    <h3 id="pendingCount">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Rejected</h6>
+                    <h3 id="rejectedCount">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-secondary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Cancelled</h6>
+                    <h3 id="cancelledCount">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center fw-bold">
+                    Leave Status Overview
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" style="height:300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white text-center fw-bold">
+                    Leaves by Department
+                </div>
+                <div class="card-body">
+                    <canvas id="departmentChart" style="height:300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white text-center fw-bold">
+                    Leave Type Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="leaveTypeChart" style="height:300px;"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
-<!-- Leave Details Modal -->
-<div class="modal fade" id="leaveDetailsModal" tabindex="-1" aria-labelledby="leaveDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="leaveDetailsModalLabel">Leave Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="leaveDetailsBody">
-                <!-- Leave details will be injected here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="~/js/Admin/Index.js" asp-append-version="true"></script>
 }

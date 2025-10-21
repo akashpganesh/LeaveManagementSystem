@@ -1,176 +1,116 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
-    const monthSelect = document.getElementById("monthFilter");
-    loadLeaveRequests(monthSelect.value);
+﻿const token = localStorage.getItem("token");
+let statusChart, leaveTypeChart, employeeChart;
 
-    monthSelect.addEventListener("change", () => {
-        loadLeaveRequests(monthSelect.value);
-    });
-});
-
-const apiBase = "/api/LeaveRequest";
-const alertPlaceholder = document.getElementById("alert-placeholder");
-const leaveCountsDiv = document.getElementById("leaveCounts");
-
-async function loadLeaveRequests(months) {
-    const token = localStorage.getItem("token");
+document.addEventListener("DOMContentLoaded", async () => {
     if (!token) {
-        window.location.href = "/Home/Index";
+        window.location.href = "/Account/Login";
         return;
     }
 
-    try {
-        let url = apiBase + "/GetAll";
-        if (months) url += `?months=${months}`;
+    const monthFilter = document.getElementById("monthFilter");
+    monthFilter.addEventListener("change", loadManagerDashboard);
 
+    await loadManagerDashboard();
+});
+
+async function loadManagerDashboard() {
+    const months = document.getElementById("monthFilter").value;
+    let url = "/api/LeaveRequest/GetAll";
+    if (months !== "all") url += `?months=${months}`;
+
+    try {
         const response = await fetch(url, {
             headers: { "Authorization": `Bearer ${token}` }
         });
-        const result = await response.json();
 
-        if (response.ok) {
-            displayLeaveCounts(result.counts);
-            displayLeaveRequests(result.data);
-        } else {
-            showAlert("danger", result.message || "Failed to load leave requests.");
+        if (!response.ok) {
+            alert("Failed to load dashboard data");
+            return;
         }
-    } catch (error) {
-        console.error(error);
-        showAlert("danger", "Unexpected error occurred while loading leave requests.");
-    }
-}
 
-function displayLeaveCounts(counts) {
-    leaveCountsDiv.innerHTML = `
-        <div class="d-flex gap-3">
-            <span class="badge bg-success">Approved: ${counts.approvedCount}</span>
-            <span class="badge bg-warning text-dark">Pending: ${counts.pendingCount}</span>
-            <span class="badge bg-danger">Rejected: ${counts.rejectedCount}</span>
-        </div>
-    `;
-}
-
-function displayLeaveRequests(leaves) {
-    const container = document.getElementById("leaveList");
-    container.innerHTML = "";
-
-    if (!leaves || leaves.length === 0) {
-        container.innerHTML = `<p class="text-center text-muted">No leave requests found.</p>`;
-        return;
-    }
-
-    const table = document.createElement("table");
-    table.className = "table table-bordered table-striped";
-
-    table.innerHTML = `
-        <thead class="table-light">
-            <tr>
-                <th>ID</th>
-                <th>Employee</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Remarks</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${leaves.map(leave => `
-                <tr>
-                    <td>${leave.leaveId}</td>
-                    <td>${leave.employeeName}</td>
-                    <td>${new Date(leave.startDate).toLocaleDateString()}</td>
-                    <td>${new Date(leave.endDate).toLocaleDateString()}</td>
-                    <td>${leave.leaveType}</td>
-                    <td>${getStatusBadge(leave.status)}</td>
-                    <td>${leave.remarks || "-"}</td>
-                    <td>
-                        <button class="btn btn-sm btn-info me-1" onclick="viewLeave(${leave.leaveId})">View</button>
-                        ${leave.status === "Pending" ? `
-                            <button class="btn btn-sm btn-success me-1" onclick="updateLeaveStatus(${leave.leaveId}, 'Approved')">Approve</button>
-                            <button class="btn btn-sm btn-danger" onclick="updateLeaveStatus(${leave.leaveId}, 'Rejected')">Reject</button>
-                        ` : ""}
-                    </td>
-                </tr>
-            `).join("")}
-        </tbody>
-    `;
-
-    container.appendChild(table);
-}
-
-async function viewLeave(leaveId) {
-    const token = localStorage.getItem("token");
-    try {
-        const response = await fetch(`${apiBase}/${leaveId}`, {
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-        const result = await response.json();
-
-        if (response.ok) {
-            const leave = result.data;
-            const modalBody = document.getElementById("leaveDetailsBody");
-
-            modalBody.innerHTML = `
-                <p><strong>Employee:</strong> ${leave.employeeName}</p>
-                <p><strong>Department:</strong> ${leave.department}</p>
-                <p><strong>Leave Type:</strong> ${leave.leaveType}</p>
-                <p><strong>Status:</strong> ${getStatusBadge(leave.status)}</p>
-                <p><strong>Start Date:</strong> ${new Date(leave.startDate).toLocaleDateString()}</p>
-                <p><strong>End Date:</strong> ${new Date(leave.endDate).toLocaleDateString()}</p>
-                <p><strong>Remarks:</strong> ${leave.remarks || "-"}</p>
-                <p><strong>Date Requested:</strong> ${new Date(leave.dateRequested).toLocaleDateString()}</p>
-            `;
-
-            const leaveModal = new bootstrap.Modal(document.getElementById('leaveDetailsModal'));
-            leaveModal.show();
-        } else {
-            showAlert("danger", result.message || "Failed to fetch leave details.");
-        }
-    } catch {
-        showAlert("danger", "Error fetching leave details.");
-    }
-}
-
-async function updateLeaveStatus(leaveId, status) {
-    if (!confirm(`Are you sure you want to ${status.toLowerCase()} this leave?`)) return;
-
-    const token = localStorage.getItem("token");
-    try {
-        const response = await fetch(`${apiBase}/${leaveId}/UpdateStatus`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ status })
-        });
         const data = await response.json();
+        const counts = data.counts;
+        const leaves = data.data;
 
-        if (response.ok) {
-            showAlert("success", data.message);
-            loadLeaveRequests(document.getElementById("monthFilter").value);
-        } else {
-            showAlert("danger", data.message || `Failed to ${status.toLowerCase()} leave.`);
+        // === Update Summary Cards ===
+        document.getElementById("approvedCount").innerText = counts.approvedCount;
+        document.getElementById("pendingCount").innerText = counts.pendingCount;
+        document.getElementById("rejectedCount").innerText = counts.rejectedCount;
+        document.getElementById("cancelledCount").innerText = counts.cancelledCount;
+
+        // === Chart 1: Leave Status Overview ===
+        if (statusChart) statusChart.destroy();
+        const statusCtx = document.getElementById("statusChart");
+        statusChart = new Chart(statusCtx, {
+            type: "bar",
+            data: {
+                labels: ["Approved", "Pending", "Rejected", "Cancelled"],
+                datasets: [{
+                    label: "Requests",
+                    data: [
+                        counts.approvedCount,
+                        counts.pendingCount,
+                        counts.rejectedCount,
+                        counts.cancelledCount
+                    ],
+                    backgroundColor: ["#198754", "#ffc107", "#dc3545", "#6c757d"]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // === Chart 2: Leave Type Distribution ===
+        const leaveTypeCount = {};
+        for (const leave of leaves) {
+            leaveTypeCount[leave.leaveType] = (leaveTypeCount[leave.leaveType] || 0) + 1;
         }
-    } catch {
-        showAlert("danger", `Error updating leave status.`);
+
+        if (leaveTypeChart) leaveTypeChart.destroy();
+        const leaveTypeCtx = document.getElementById("leaveTypeChart");
+        leaveTypeChart = new Chart(leaveTypeCtx, {
+            type: "doughnut",
+            data: {
+                labels: Object.keys(leaveTypeCount),
+                datasets: [{
+                    data: Object.values(leaveTypeCount),
+                    backgroundColor: ["#0dcaf0", "#20c997", "#ffc107", "#dc3545", "#6f42c1"]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+
+        // === Chart 3: Leaves per Employee ===
+        const employeeCount = {};
+        for (const leave of leaves) {
+            employeeCount[leave.employeeName] = (employeeCount[leave.employeeName] || 0) + 1;
+        }
+
+        if (employeeChart) employeeChart.destroy();
+        const employeeCtx = document.getElementById("employeeChart");
+        employeeChart = new Chart(employeeCtx, {
+            type: "pie",
+            data: {
+                labels: Object.keys(employeeCount),
+                datasets: [{
+                    data: Object.values(employeeCount),
+                    backgroundColor: ["#0d6efd", "#198754", "#ffc107", "#dc3545", "#6c757d", "#6610f2"]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+
+    } catch (error) {
+        console.error("Error loading dashboard:", error);
+        alert("An unexpected error occurred while loading the dashboard.");
     }
-}
-
-function getStatusBadge(status) {
-    let colorClass = "secondary";
-    if (status === "Approved") colorClass = "success";
-    else if (status === "Pending") colorClass = "warning";
-    else if (status === "Rejected") colorClass = "danger";
-    return `<span class="badge bg-${colorClass}">${status}</span>`;
-}
-
-function showAlert(type, message) {
-    const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show mt-3" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>`;
-    alertPlaceholder.innerHTML = alertHtml;
 }
