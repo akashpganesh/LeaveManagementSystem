@@ -1,0 +1,45 @@
+﻿@{
+    Layout = "~/Views/Shared/_EmployeeLayout.cshtml";
+    ViewData["Title"] = "Request Leave";
+}
+
+<div class="d-flex justify-content-center align-items-center" style="height: 100vh; background-color: #f8f9fa;">
+    <div class="card p-4 shadow-sm" style="width: 400px;">
+        <h2 class="text-center mb-4">Request Leave</h2>
+
+        <div id="alert-placeholder"></div>
+
+        <form id="leaveRequestForm" novalidate>
+            <div class="mb-3">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="startDate" required>
+                <div class="invalid-feedback">Start date is required.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" class="form-control" id="endDate" required>
+                <div class="invalid-feedback">End date is required.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="leaveType" class="form-label">Leave Type</label>
+                <select class="form-select" id="leaveType" required>
+                    <option value="">Loading leave types...</option>
+                </select>
+                <div class="invalid-feedback">Please select a leave type.</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="remarks" class="form-label">Remarks</label>
+                <textarea class="form-control" id="remarks" rows="3" placeholder="Optional"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Submit Leave Request</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Employee/CreateLeaveRequest.js" asp-append-version="true"></script>
+}

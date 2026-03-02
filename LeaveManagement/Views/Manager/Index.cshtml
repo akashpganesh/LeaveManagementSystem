@@ -1,0 +1,96 @@
+﻿@{
+    Layout = "~/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "Manager Dashboard";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Manager Dashboard</h2>
+
+    <!-- Month Filter -->
+    <div class="text-center mb-4">
+        <label for="monthFilter" class="form-label me-2 fw-bold">Show data from last:</label>
+        <select id="monthFilter" class="form-select d-inline-block" style="width: auto;">
+            <option value="all" selected>All</option>
+            <option value="1">1 Month</option>
+            <option value="3">3 Months</option>
+            <option value="6">6 Months</option>
+        </select>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row text-center mb-4 justify-content-center">
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Approved</h6>
+                    <h3 id="approvedCount">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-warning text-dark shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Pending</h6>
+                    <h3 id="pendingCount">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-danger text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Rejected</h6>
+                    <h3 id="rejectedCount">0</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2 col-sm-6 mb-3">
+            <div class="card bg-secondary text-white shadow-sm">
+                <div class="card-body">
+                    <h6 class="card-title">Cancelled</h6>
+                    <h3 id="cancelledCount">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center fw-bold">
+                    Leave Status Overview
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" style="height:300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white text-center fw-bold">
+                    Leave Type Distribution
+                </div>
+                <div class="card-body">
+                    <canvas id="leaveTypeChart" style="height:300px;"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-5 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white text-center fw-bold">
+                    Leaves per Employee
+                </div>
+                <div class="card-body">
+                    <canvas id="employeeChart" style="height:300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/js/Manager/Index.js" asp-append-version="true"></script>
+}

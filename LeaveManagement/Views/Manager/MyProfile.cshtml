@@ -1,0 +1,74 @@
+﻿@{
+    Layout = "~/Views/Shared/_ManagerLayout.cshtml";
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">My Profile</h2>
+
+    <div id="alert-placeholder"></div>
+
+    <!-- Update Profile Form -->
+    <div class="card mb-4 p-4 shadow-sm">
+        <h4>Profile Information</h4>
+        <form id="updateProfileForm">
+            <div class="mb-3">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="text" class="form-control" id="phone" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Role</label>
+                <input type="text" class="form-control" id="role" readonly>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Department</label>
+                <input type="text" class="form-control" id="department" readonly>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+            <button type="button" class="btn btn-warning ms-2" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                Change Password
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="oldPassword1" class="form-label">Current Password</label>
+                        <input type="password" class="form-control" id="oldPassword1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="oldPassword2" class="form-label">Confirm Current Password</label>
+                        <input type="password" class="form-control" id="oldPassword2" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Manager/MyProfile.js" asp-append-version="true"></script>
+}
